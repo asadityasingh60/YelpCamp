@@ -1,0 +1,24 @@
+body{
+    color: black;
+};
+.jumbotron{
+    margin-top: 15px;
+};
+.nav-item{
+    padding-right: 50px;
+}
+
+.img-thumbnail img{
+    width:100%;
+}
+
+.thumbnail {
+    padding: 0;
+}
+.img-thumbnail .caption-full{
+    padding:9px;
+}
+
+#delete-form{
+    display: inline;
+}
