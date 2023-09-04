@@ -1,0 +1,46 @@
+name: Create Jira Subtask
+
+on:
+  pull_request:
+    branches:
+      - 'develop'
+    paths:
+      - '**/migrations/*'
+
+jobs:
+  create-subtask:
+    runs-on: self-hosted
+    steps:
+      - name: Extract Jira Issue Key
+        id: extract-jira-issue-key
+        run: |
+          PR_BODY="${{ github.event.pull_request.body }}"
+          JIRA_ISSUE_KEY=$(echo "$PR_BODY" | grep -o -E '[A-Z]+-\d+')  
+          echo "::set-output name=jira_issue_key::$JIRA_ISSUE_KEY"
+
+
+      - name: Create Jira Subtask
+        env:
+          JIRA_TOKEN: ${{ secrets.JIRA_TOKEN }}
+          JIRA_API_URL: https://bankofloyal.atlassian.net/jira/software/c/projects/BL/issues
+        run: |
+          JIRA_ISSUE_KEY=${{ steps.extract-jira-issue-key.outputs.jira_issue_key }}
+                
+          SUBTASK_DATA=$(cat <<EOF
+          {
+            "fields": {
+              "project": {"key": "BL"},
+              "issuetype": {"name": "Task"},
+              "parent": {"key": "$JIRA_ISSUE_KEY"},
+              "summary": "Migration applied to PostgreSQL",
+            }
+          }
+          EOF
+          )
+                
+          curl -X POST -H "Authorization: Basic $JIRA_TOKEN" \
+             -H "Content-Type: application/json" \
+             -d "$SUBTASK_DATA" \
+             $JIRA_API_URL/
+            
+
